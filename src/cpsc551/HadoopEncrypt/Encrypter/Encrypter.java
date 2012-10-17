@@ -44,7 +44,7 @@ public class Encrypter
 		{			
 			return encrypter.doFinal(bytes);
 		}
-		catch(Exception e) {};
+		catch(Exception e) {}; //TODO exception catching?
 		return null;
 	}
 	
@@ -61,7 +61,7 @@ public class Encrypter
 		}
 	    catch (javax.crypto.BadPaddingException e) 
 	    {
-	    	byte[] b = {1};
+	    	byte[] b = {1};//TODO exception catching?
 	    	return b;
 	    } 
 		catch (IllegalBlockSizeException e) 
