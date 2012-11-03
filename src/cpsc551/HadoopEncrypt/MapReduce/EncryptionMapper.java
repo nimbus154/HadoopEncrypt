@@ -4,10 +4,15 @@
 package cpsc551.HadoopEncrypt.MapReduce;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.KeyGenerator;
 
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
+
+import cpsc551.HadoopEncrypt.Encrypter.Encrypter;
 
 /**
  * Encrypts 
@@ -19,6 +24,14 @@ public class EncryptionMapper
 {
 	//TODO give this guy the encryption function and block size, setEncrypter?
 	
+	private Encrypter encrypter;
+	
+	public EncryptionMapper() throws NoSuchAlgorithmException
+	{
+		//TODO save/reuse key
+		encrypter = new Encrypter(KeyGenerator.getInstance("AES").generateKey()); 
+	}
+	
 	/**
 	 * Generates (block number, encrypted block) key-value pairs
 	 * @param key block number
@@ -28,9 +41,9 @@ public class EncryptionMapper
 	public void map(IntWritable key, BytesWritable value, Context context)
 			throws IOException, InterruptedException
 	{
-		byte[] plaintext = value.getBytes();
-		for(int i = 0; i < plaintext.length; i++)
-			plaintext[i]++;
-		context.write(key, new BytesWritable(plaintext));
+		context.write(
+				key, 
+				new BytesWritable(encrypter.encrypt(value.getBytes()))
+		);
 	}
 }
