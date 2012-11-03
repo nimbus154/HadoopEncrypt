@@ -24,6 +24,10 @@ public class EncryptionMapper
 	//TODO give this guy the encryption function and block size, setEncrypter?
 	
 	private Encrypter encrypter;
+	public int getBs() 
+	{
+		return encrypter.getBlockSize();
+	}
 	
 	/**
 	 * Creates a EncryptionMapper with a given key
@@ -34,6 +38,11 @@ public class EncryptionMapper
 		encrypter = new Encrypter(key);
 	}
 	
+	public EncryptionMapper(Encrypter encrypter)
+	{
+		this.encrypter = encrypter;
+	}
+	
 	/**
 	 * Generates (block number, encrypted block) key-value pairs
 	 * @param key block number
@@ -42,7 +51,7 @@ public class EncryptionMapper
 	 */
 	public void map(IntWritable key, BytesWritable value, Context context)
 			throws IOException, InterruptedException
-	{
+	{				
 		context.write(
 				key, 
 				new BytesWritable(encrypter.encrypt(value.getBytes()))

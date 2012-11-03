@@ -19,6 +19,7 @@ import org.apache.hadoop.io.*;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 
+import cpsc551.HadoopEncrypt.Encrypter.Encrypter;
 import cpsc551.HadoopEncrypt.MapReduce.EncryptionMapper;
 
 /**
@@ -43,17 +44,21 @@ public class EncryptionMapperTest {
 	 */
 	@Test
 	public void testMapIntWritableBytesWritableContext() throws Exception {
-		byte[] input = {0, 1, 2, 3, 4, 5, 6, 7};	
-		
+		Encrypter e = new Encrypter(key);
+		byte[] plaintext = {0, 1, 2, 3, 4, 5, 6, 7};	
+		BytesWritable input = new BytesWritable(plaintext);
 		List<Pair<IntWritable, BytesWritable>> result = 
 				new MapDriver<IntWritable, BytesWritable, IntWritable, BytesWritable>()
-					.withMapper(new EncryptionMapper(key))
-					.withInput(new IntWritable(1), new BytesWritable(input))
+					.withMapper(new EncryptionMapper(e))
+					.withInput(new IntWritable(1), input)
 					.run();
 		byte[] encrypted = result.get(0).getSecond().getBytes();
-		for(int i = 0; i < input.length; i++)
-			assertThat(input[i], IsNot.not(IsEqual.equalTo(encrypted[i])));
+		for(int i = 0; i < plaintext.length; i++)
+			assertThat(plaintext[i], IsNot.not(IsEqual.equalTo(encrypted[i])));
 		
+		
+		byte[] expected = e.encrypt(input.getBytes());		
+		assertEquals(expected.length, encrypted.length);
 		
 	}
 }
