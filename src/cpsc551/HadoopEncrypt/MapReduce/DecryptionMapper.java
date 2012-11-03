@@ -4,9 +4,8 @@
 package cpsc551.HadoopEncrypt.MapReduce;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 
-import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -25,11 +24,14 @@ public class DecryptionMapper
 	//TODO give this guy the encryption function and block size, setEncrypter?
 	
 	private Encrypter encrypter;
-	
-	public DecryptionMapper() throws NoSuchAlgorithmException
+
+	/**
+	 * Creates a DecryptionMapper with a given ken
+	 * @param key key to use for decryption
+	 */
+	public DecryptionMapper(SecretKey key)
 	{
-		//TODO save/reuse key
-		encrypter = new Encrypter(KeyGenerator.getInstance("AES").generateKey()); 
+		encrypter = new Encrypter(key);
 	}
 	
 	/**
