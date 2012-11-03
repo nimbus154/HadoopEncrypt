@@ -12,6 +12,9 @@ import org.junit.Test;
 
 import java.util.List;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.types.Pair;
@@ -25,11 +28,14 @@ import cpsc551.HadoopEncrypt.MapReduce.EncryptionMapper;
  */
 public class EncryptionMapperTest {
 
+	private SecretKey key;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		key = KeyGenerator.getInstance("AES").generateKey();
 	}
 
 	/**
@@ -37,10 +43,11 @@ public class EncryptionMapperTest {
 	 */
 	@Test
 	public void testMapIntWritableBytesWritableContext() throws Exception {
-		byte[] input = {0, 1, 2, 3, 4, 5, 6, 7};		
+		byte[] input = {0, 1, 2, 3, 4, 5, 6, 7};	
+		
 		List<Pair<IntWritable, BytesWritable>> result = 
 				new MapDriver<IntWritable, BytesWritable, IntWritable, BytesWritable>()
-					.withMapper(new EncryptionMapper())
+					.withMapper(new EncryptionMapper(key))
 					.withInput(new IntWritable(1), new BytesWritable(input))
 					.run();
 		byte[] encrypted = result.get(0).getSecond().getBytes();
