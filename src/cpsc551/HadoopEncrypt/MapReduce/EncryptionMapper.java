@@ -5,6 +5,7 @@ package cpsc551.HadoopEncrypt.MapReduce;
 
 import java.io.IOException;
 
+import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 import org.apache.hadoop.io.BytesWritable;
@@ -21,17 +22,18 @@ import cpsc551.HadoopEncrypt.Encrypter.Encrypter;
  *
  */
 public class EncryptionMapper 
-	extends Mapper<LongWritable, Text,	LongWritable, BytesWritable> 
+	extends Mapper<LongWritable, Text,	LongWritable, Text> 
 {
 	//TODO give this guy the encryption function and block size, setEncrypter?
 	
-	public EncryptionMapper() { };
-	
 	private Encrypter encrypter;
-	public int getBs() 
-	{
-		return encrypter.getBlockSize();
-	}
+	private SecretKey key;
+	
+	public EncryptionMapper() throws Exception
+	{ 
+		key = KeyGenerator.getInstance("AES").generateKey();
+		encrypter = new Encrypter(key);
+	};
 	
 	/**
 	 * Creates a EncryptionMapper with a given key
@@ -55,10 +57,11 @@ public class EncryptionMapper
 	 */
 	public void map(LongWritable key, Text value, Context context)
 			throws IOException, InterruptedException
-	{				
+	{	
 		context.write(
 				key, 
-				new BytesWritable(encrypter.encrypt(value.getBytes()))
+				new Text("Key: " + this.key.toString() + "\n" 
+							+ encrypter.encrypt(value.getBytes()))
 		);
 	}
 }
