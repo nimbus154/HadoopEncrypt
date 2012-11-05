@@ -9,6 +9,8 @@ import javax.crypto.SecretKey;
 
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import cpsc551.HadoopEncrypt.Encrypter.Encrypter;
@@ -19,9 +21,11 @@ import cpsc551.HadoopEncrypt.Encrypter.Encrypter;
  *
  */
 public class EncryptionMapper 
-	extends Mapper<IntWritable, BytesWritable,	IntWritable, BytesWritable> 
+	extends Mapper<LongWritable, Text,	LongWritable, BytesWritable> 
 {
 	//TODO give this guy the encryption function and block size, setEncrypter?
+	
+	public EncryptionMapper() { };
 	
 	private Encrypter encrypter;
 	public int getBs() 
@@ -49,7 +53,7 @@ public class EncryptionMapper
 	 * @param value byte string to be encrypted
 	 * @param context to write new key values to;
 	 */
-	public void map(IntWritable key, BytesWritable value, Context context)
+	public void map(LongWritable key, Text value, Context context)
 			throws IOException, InterruptedException
 	{				
 		context.write(
