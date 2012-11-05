@@ -4,19 +4,16 @@
 package cpsc551.HadoopEncrypt.MapReduce;
 
 import java.io.IOException;
-import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Scanner;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Mapper.Context;
 
+import cpsc551.HadoopEncrypt.Encrypter.ArrayConverter;
 import cpsc551.HadoopEncrypt.Encrypter.Encrypter;
 
 /**
@@ -25,7 +22,7 @@ import cpsc551.HadoopEncrypt.Encrypter.Encrypter;
  *
  */
 public class DecryptionMapper 
-	extends Mapper<LongWritable, Text,	LongWritable, Text> 
+	extends Mapper<LongWritable, Text,	Text, Text> 
 {
 	/**
 	 * Performs decryption operations
@@ -63,32 +60,30 @@ public class DecryptionMapper
 	public void map(LongWritable key, Text value, Context context)
 			throws IOException, InterruptedException
 	{	
-		//parse line input:
-		//get key
-		//get encrypted data
 		Scanner scanner = new Scanner(value.toString());
-		scanner.useDelimiter("~");
-		scanner.next(); //ignore first part; old mapreduce key
-		encrypter = new Encrypter(extractKey(scanner.next())); //encryption key
-		String encrypted = scanner.next(); //encrypted data
+		encrypter = new Encrypter(makeKey(scanner.next())); //encryption key
 		
-		//TODO find out a better way to pass the key
-		context.write(
-				key, 
-				new Text(
-					//"KEY: "
-					//+ new BigInteger(1, this.key.getEncoded()).toString() 
-					 "ENCRYPTED DATA" + encrypted
-				)
-		);
+		byte[] encrypted = getEncryptedData(scanner);
+		
+		context.write(new Text(), new Text(encrypted));
 	}
 	
+	private byte[] getEncryptedData(Scanner scanner) 
+	{
+		//make a byte array from the encrypted data
+		ArrayList<Byte> encryptedData = new ArrayList<Byte>();
+		while(scanner.hasNext())
+			encryptedData.add(Byte.parseByte(scanner.next(), 16));
+		
+		return ArrayConverter.toByteArray(encryptedData);
+	}
+
 	/**
 	 * Retrieve the encryption key from the input
 	 * @param keystring the key as a string
 	 * @return the encryption key stored in the input
 	 */
-	private SecretKey extractKey(String keystring)
+	private SecretKey makeKey(String keystring)
 	{
 		
 		return null;
