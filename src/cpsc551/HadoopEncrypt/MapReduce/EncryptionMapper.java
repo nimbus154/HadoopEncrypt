@@ -63,7 +63,7 @@ public class EncryptionMapper
 				key, 
 				new Text(
 					"~"
-					+ new BigInteger(1, this.key.getEncoded()).toString() 
+					+ new BigInteger(1, this.key.getEncoded()).toString(16) 
 					+ "~" + new String(encrypter.encrypt(value.getBytes()))
 				)
 		);
