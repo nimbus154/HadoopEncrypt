@@ -32,8 +32,7 @@ public class EncryptionMapper
 	
 	public EncryptionMapper() throws Exception
 	{ 
-		key = KeyGenerator.getInstance("AES").generateKey();
-		encrypter = new Encrypter(key);
+		this(KeyGenerator.getInstance("AES").generateKey());
 	};
 	
 	/**
@@ -42,6 +41,7 @@ public class EncryptionMapper
 	 */
 	public EncryptionMapper(SecretKey key)
 	{
+		this.key = key;
 		encrypter = new Encrypter(key);
 	}
 	
@@ -59,11 +59,15 @@ public class EncryptionMapper
 	public void map(LongWritable key, Text value, Context context)
 			throws IOException, InterruptedException
 	{	
+		//write encryption key (!) and encrypted data to file
+		//TODO find out a better way to pass the key
 		context.write(
 				key, 
-				new Text("Key: " 
-							+ new BigInteger(1, this.key.getEncoded()).toString() 
-							+ "\n" + encrypter.encrypt(value.getBytes()))
+				new Text(
+					"~"
+					+ new BigInteger(1, this.key.getEncoded()).toString() 
+					+ "~" + new String(encrypter.encrypt(value.getBytes()))
+				)
 		);
 	}
 }
