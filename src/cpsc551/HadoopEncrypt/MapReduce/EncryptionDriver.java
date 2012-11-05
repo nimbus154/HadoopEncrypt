@@ -19,14 +19,23 @@ import org.apache.hadoop.util.ToolRunner;
  *
  */
 public class EncryptionDriver extends Configured implements Tool {
+	
+	/**
+	 * Print usage instructions for the class
+	 */
+	private void printUsage()
+	{
+	      System.err.printf("Usage: %s [generic options] " 
+	    		  + "<encrypt|decrypt> <input> <output>\n",
+	          getClass().getSimpleName());
+	      ToolRunner.printGenericCommandUsage(System.err);
+	}
 
 	  @Override
 	  public int run(String[] args) throws Exception {
 		//check command line arguments
-	    if (args.length != 2) {
-	      System.err.printf("Usage: %s [generic options] <input> <output>\n",
-	          getClass().getSimpleName());
-	      ToolRunner.printGenericCommandUsage(System.err);
+	    if (args.length != 3) {
+	    	printUsage();
 	      return -1;
 	    }
 	    
@@ -34,13 +43,20 @@ public class EncryptionDriver extends Configured implements Tool {
 	    Job job = new Job(getConf(), "HadoopEncrypt");
 	    job.setJarByClass(getClass());
 
-	    FileInputFormat.addInputPath(job, new Path(args[0]));
-	    FileOutputFormat.setOutputPath(job, new Path(args[1]));
+	    FileInputFormat.addInputPath(job, new Path(args[1]));
+	    FileOutputFormat.setOutputPath(job, new Path(args[2]));
 	    
-	    job.setMapperClass(EncryptionMapper.class);
+	    if(args[0].equals("encrypt"))
+	    	job.setMapperClass(EncryptionMapper.class);
+	    else if(args[0].equals("decrypt"))
+	    	job.setMapperClass(DecryptionMapper.class);
+	    else
+	    	throw new IllegalArgumentException(
+	    			"Must specify either encrypt or decrypt");
+	    
 	    job.setCombinerClass(EncryptionReducer.class);
 	    job.setReducerClass(EncryptionReducer.class);
-
+	    
 	    job.setOutputKeyClass(LongWritable.class);
 	    job.setOutputValueClass(Text.class);
 	    
