@@ -6,7 +6,6 @@ package cpsc551.HadoopEncrypt.MapReduce;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -26,8 +25,7 @@ public class EncryptionDriver extends Configured implements Tool {
 	 */
 	private void printUsage()
 	{
-	      System.err.printf("Usage: %s [generic options] " 
-	    		  + "<encrypt|decrypt> <input> <output>\n",
+	      System.err.printf("Usage: %s [generic options] <input> <output>\n",
 	          getClass().getSimpleName());
 	      ToolRunner.printGenericCommandUsage(System.err);
 	}
@@ -35,7 +33,7 @@ public class EncryptionDriver extends Configured implements Tool {
 	  @Override
 	  public int run(String[] args) throws Exception {
 		//check command line arguments
-	    if (args.length != 3) {
+	    if (args.length != 2) {
 	    	printUsage();
 	      return -1;
 	    }
@@ -44,17 +42,10 @@ public class EncryptionDriver extends Configured implements Tool {
 	    Job job = new Job(getConf(), "HadoopEncrypt");
 	    job.setJarByClass(getClass());
 
-	    FileInputFormat.addInputPath(job, new Path(args[1]));
-	    FileOutputFormat.setOutputPath(job, new Path(args[2]));
+	    FileInputFormat.addInputPath(job, new Path(args[0]));
+	    FileOutputFormat.setOutputPath(job, new Path(args[1]));
 	    
-	    if(args[0].equals("encrypt"))
-	    	job.setMapperClass(EncryptionMapper.class);
-	    else if(args[0].equals("decrypt"))
-	    	job.setMapperClass(DecryptionMapper.class);
-	    else
-	    	throw new IllegalArgumentException(
-	    			"Must specify either encrypt or decrypt");
-	    
+	    job.setMapperClass(EncryptionMapper.class);
 	    job.setCombinerClass(EncryptionReducer.class);
 	    job.setReducerClass(EncryptionReducer.class);
 	    
