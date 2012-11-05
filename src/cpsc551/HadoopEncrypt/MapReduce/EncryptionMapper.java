@@ -4,6 +4,7 @@
 package cpsc551.HadoopEncrypt.MapReduce;
 
 import java.io.IOException;
+import java.math.BigInteger;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -60,8 +61,9 @@ public class EncryptionMapper
 	{	
 		context.write(
 				key, 
-				new Text("Key: " + this.key.toString() + "\n" 
-							+ encrypter.encrypt(value.getBytes()))
+				new Text("Key: " 
+							+ new BigInteger(1, this.key.getEncoded()).toString() 
+							+ "\n" + encrypter.encrypt(value.getBytes()))
 		);
 	}
 }
