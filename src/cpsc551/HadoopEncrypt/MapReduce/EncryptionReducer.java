@@ -8,6 +8,7 @@ import java.io.IOException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 /**
@@ -16,7 +17,7 @@ import org.apache.hadoop.mapreduce.Reducer;
  *
  */
 public class EncryptionReducer extends
-		Reducer<LongWritable, BytesWritable, LongWritable, BytesWritable> 
+		Reducer<LongWritable, Text, LongWritable, Text> 
 {
 	public EncryptionReducer() { } ;
 	
@@ -27,10 +28,10 @@ public class EncryptionReducer extends
 	 * @param context to write new key values to;
 	 */
 	@Override
-	public void reduce(LongWritable key, Iterable<BytesWritable> value, Context context)
+	public void reduce(LongWritable key, Iterable<Text> value, Context context)
 			throws IOException, InterruptedException
 	{
-		for(BytesWritable bytes : value)
-			context.write(key, bytes);		
+		for(Text text : value)
+			context.write(key, text);		
 	}
 }
