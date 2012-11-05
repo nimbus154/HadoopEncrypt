@@ -5,6 +5,7 @@ package cpsc551.HadoopEncrypt.MapReduce;
 
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -57,8 +58,8 @@ public class EncryptionDriver extends Configured implements Tool {
 	    job.setCombinerClass(EncryptionReducer.class);
 	    job.setReducerClass(EncryptionReducer.class);
 	    
-	    job.setOutputKeyClass(LongWritable.class);
-	    job.setOutputValueClass(Text.class);
+	    job.setOutputKeyClass(Text.class);
+	    job.setOutputValueClass(BytesWritable.class);
 	    
 	    return job.waitForCompletion(true) ? 0 : 1;
 	  }

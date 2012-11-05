@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -21,7 +22,7 @@ import cpsc551.HadoopEncrypt.Encrypter.Encrypter;
  *
  */
 public class EncryptionMapper 
-	extends Mapper<LongWritable, Text,	LongWritable, Text> 
+	extends Mapper<LongWritable, Text,	Text, BytesWritable> 
 {
 	//TODO give this guy the encryption function and block size, setEncrypter?
 	
@@ -60,12 +61,8 @@ public class EncryptionMapper
 		//write encryption key (!) and encrypted data to file
 		//TODO find out a better way to pass the key
 		context.write(
-				key, 
-				new Text(
-					"~"
-					+ new BigInteger(1, this.key.getEncoded()).toString(16) 
-					+ "~" + new String(encrypter.encrypt(value.getBytes()))
-				)
+				new Text(new BigInteger(1, this.key.getEncoded()).toString(16)), 
+				new BytesWritable(encrypter.encrypt(value.getBytes()))
 		);
 	}
 }
