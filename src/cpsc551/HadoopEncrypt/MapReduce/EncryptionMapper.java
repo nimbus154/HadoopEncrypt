@@ -23,9 +23,7 @@ import cpsc551.HadoopEncrypt.Encrypter.Encrypter;
  */
 public class EncryptionMapper 
 	extends Mapper<LongWritable, Text,	Text, BytesWritable> 
-{
-	//TODO give this guy the encryption function and block size, setEncrypter?
-	
+{	
 	private Encrypter encrypter;
 	private SecretKey key;
 	
@@ -41,7 +39,9 @@ public class EncryptionMapper
 	public EncryptionMapper(SecretKey key)
 	{
 		this.key = key;
+		try{
 		encrypter = new Encrypter(key);
+		}catch(Exception e) {}
 	}
 	
 	public EncryptionMapper(Encrypter encrypter)
@@ -60,9 +60,10 @@ public class EncryptionMapper
 	{	
 		//write encryption key (!) and encrypted data to file
 		//TODO find out a better way to pass the key
-		context.write(
-				new Text(new BigInteger(1, this.key.getEncoded()).toString(16)), 
-				new BytesWritable(encrypter.encrypt(value.getBytes()))
+		context.write
+		(
+			new Text(new BigInteger(1, this.key.getEncoded()).toString(16)), 
+			new BytesWritable(encrypter.encrypt(value.toString().getBytes()))
 		);
 	}
 }

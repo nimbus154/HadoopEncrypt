@@ -4,10 +4,12 @@
 package cpsc551.HadoopEncrypt.MapReduce;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -43,7 +45,7 @@ public class DecryptionMapper
 	public DecryptionMapper(SecretKey key)
 	{
 		this.key = key;
-		encrypter = new Encrypter(key);
+		//encrypter = new Encrypter(key);
 	}
 	
 	public DecryptionMapper(Encrypter encrypter)
@@ -61,11 +63,25 @@ public class DecryptionMapper
 			throws IOException, InterruptedException
 	{	
 		Scanner scanner = new Scanner(value.toString());
-		encrypter = new Encrypter(makeKey(scanner.next())); //encryption key
-		
-		byte[] encrypted = getEncryptedData(scanner);
-		
-		context.write(new Text(), new Text(encrypted));
+		String s = "no exception";
+		byte[] encrypted = { };
+		String keystring = scanner.next();
+		try{
+		encrypter = new Encrypter(makeKey(keystring)); //encryption key
+		encrypted = encrypter.decrypt(getEncryptedData(scanner));
+		}
+		catch(Exception e)
+		{ 
+			s = e.getMessage();
+		}
+
+		if(encrypted.length != 0)
+			context.write(new Text(), new Text(encrypted));
+		else
+		{
+			String bLength = Integer.toString(keystring.getBytes().length);
+			context.write(new Text(bLength), new Text(s));
+		}
 	}
 	
 	private byte[] getEncryptedData(Scanner scanner) 
@@ -88,7 +104,7 @@ public class DecryptionMapper
 	 */
 	private SecretKey makeKey(String keystring)
 	{
-		
-		return null;
+		byte[] encodedKey = new BigInteger(keystring, 16).toByteArray();
+		return new SecretKeySpec(encodedKey, "AES");
 	}
 }
