@@ -73,7 +73,10 @@ public class DecryptionMapper
 		//make a byte array from the encrypted data
 		ArrayList<Byte> encryptedData = new ArrayList<Byte>();
 		while(scanner.hasNext())
-			encryptedData.add(Byte.parseByte(scanner.next(), 16));
+		{
+			int nextVal = Integer.parseInt(scanner.next(), 16);
+			encryptedData.add((byte) nextVal);
+		}
 		
 		return ArrayConverter.toByteArray(encryptedData);
 	}
