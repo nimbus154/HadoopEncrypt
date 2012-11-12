@@ -21,16 +21,16 @@ public class Encrypter
 	 * Creates a new Encrypter to perform encryption and decryption operations
 	 * @param key key to be used with symmetric cipher
 	 */
-	public Encrypter(SecretKey key)
+	public Encrypter(SecretKey key) throws Exception
 	{
-		try
-		{
+		//try
+		//{
 			encrypter = Cipher.getInstance("AES");
 			decrypter = Cipher.getInstance("AES");
 			encrypter.init(Cipher.ENCRYPT_MODE, key);
 			decrypter.init(Cipher.DECRYPT_MODE, key);
-		}
-		catch(Exception e) {}; //TODO Actually handle exceptions
+		//}
+		//catch(Exception e) {}; //TODO Actually handle exceptions
 	}
 	
 	/**
