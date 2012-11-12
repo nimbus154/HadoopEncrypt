@@ -1,1 +1,36 @@
-A simple encryption program using Hadoop
+Set Up Cluster:
+	1. Power on master and slave nodes.
+	2. Modify /etc/hosts: associated node names with their IP addresses (if on 
+		new network)
+	3. If adding new nodes, make sure to
+		a. Add their hostnames to hadoop/conf/slaves
+		b. Modify those nodes' core-site.xml, mapred-site.xml, and 
+			hdfs-site.xml.
+		c. Also make sure nodes are running ssh, and hduser can connect without
+				 using a password
+			i. Test this first, so you don't have to manually type "yes" when 
+				ssh asks if it's okay to connect.
+	4. Format the namenode if desired:
+			hadoop namenode -format
+	5. Start hdfs:
+			start-dfs.sh
+	6. Check that it started by running `jps` on each node.
+			If it failed, check logs/hadoop-nodeName-datanode.log.
+	7. Start MapReduce:
+			start-mapred.sh
+	8. Again, ensure that the MapReduce (Job and Task Trackers) are running by 
+		using `jps.`
+	9. Run your MapReduce job.
+
+Copy a File to be Encrypted:
+	hadoop dfs -copyFromLocal fileToEncrypt /user/hduser/to_encrypt
+
+To Encrypt:
+	hadoop jar hdEncrypt.jar cpsc551.HadoopEncrypt.MapReduce.EncryptionDriver /user/hduser/to_encrypt /user/hduser/encrypted
+
+To Decrypt:
+	hadoop jar hdEncrypt.jar cpsc551.HadoopEncrypt.MapReduce.DecryptionDriver /user/hduser/encrypted /user/hduser/decrypted
+
+To Retrieve Encrypted and Decrypted Files:
+	hadoop dfs -getmerge /user/hduser/encrypted ./encrypted
+	hadoop dfs -getmerge /user/hduser/decrypted ./decrypted
