@@ -5,7 +5,7 @@ package cpsc551.HadoopEncrypt.MapReduce;
 
 import java.io.IOException;
 
-import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -15,7 +15,7 @@ import org.apache.hadoop.mapreduce.Reducer;
  *
  */
 public class EncryptionReducer extends
-		Reducer<LongWritable, Text, LongWritable, Text> 
+		Reducer<Text, BytesWritable, Text, BytesWritable> 
 {
 	public EncryptionReducer() { } ;
 	
@@ -26,11 +26,11 @@ public class EncryptionReducer extends
 	 * @param context to write new key values to;
 	 */
 	@Override
-	public void reduce(LongWritable key, Iterable<Text> value, Context context)
+	public void reduce(Text key, Iterable<BytesWritable> value, Context context)
 			throws IOException, InterruptedException
 	{
 		//simple write encrypted data to file
-		for(Text text : value)
-			context.write(key, text);		
+		for(BytesWritable b : value)
+			context.write(key, b);		
 	}
 }
