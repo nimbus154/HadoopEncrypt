@@ -4,11 +4,11 @@
 package cpsc551.HadoopEncrypt.MapReduce;
 
 import java.io.IOException;
-import java.math.BigInteger;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -22,10 +22,9 @@ import cpsc551.HadoopEncrypt.Encrypter.Encrypter;
  *
  */
 public class EncryptionMapper 
-	extends Mapper<LongWritable, Text,	Text, BytesWritable> 
+	extends Mapper<LongWritable, Text,	LongWritable, BytesWritable> 
 {	
 	private Encrypter encrypter;
-	private SecretKey key;
 	
 	public EncryptionMapper() throws Exception
 	{ 
@@ -38,7 +37,6 @@ public class EncryptionMapper
 	 */
 	public EncryptionMapper(SecretKey key)
 	{
-		this.key = key;
 		try{
 		encrypter = new Encrypter(key);
 		}catch(Exception e) {}
@@ -58,11 +56,19 @@ public class EncryptionMapper
 	public void map(LongWritable key, Text value, Context context)
 			throws IOException, InterruptedException
 	{	
-		//write encryption key (!) and encrypted data to file
-		//TODO find out a better way to pass the key
+		Configuration conf = context.getConfiguration();
+		String encryptionKey = conf.get("encryptionKey");
+		try 
+		{
+			encrypter = new Encrypter(encryptionKey.toCharArray());
+		}
+		catch(Exception e) //encryption initialization errors
+		{
+			context.write(new LongWritable(-1), new BytesWritable());
+		}
 		context.write
 		(
-			new Text(new BigInteger(1, this.key.getEncoded()).toString(16)), 
+			key, 
 			new BytesWritable(encrypter.encrypt(value.toString().getBytes()))
 		);
 	}
