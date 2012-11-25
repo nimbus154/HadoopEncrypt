@@ -6,6 +6,9 @@ package cpsc551.HadoopEncrypt.Encrypter;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
 
 /**
  * Performs encryption and decryption operations
@@ -23,15 +26,38 @@ public class Encrypter
 	 */
 	public Encrypter(SecretKey key) throws Exception
 	{
-		//try
-		//{
-			encrypter = Cipher.getInstance("AES");
-			decrypter = Cipher.getInstance("AES");
-			encrypter.init(Cipher.ENCRYPT_MODE, key);
-			decrypter.init(Cipher.DECRYPT_MODE, key);
-		//}
-		//catch(Exception e) {}; //TODO Actually handle exceptions
+		encrypter = Cipher.getInstance("AES");
+		decrypter = Cipher.getInstance("AES");
+		encrypter.init(Cipher.ENCRYPT_MODE, key);
+		decrypter.init(Cipher.DECRYPT_MODE, key);
 	}
+	
+	/**
+	 * Initializes an encrypter to use a user-supplied key
+	 * @param key encryption key
+	 * @throws Exception key and algorithm-related exceptions
+	 */
+	public Encrypter(char[] key) throws Exception
+	{	
+		String algorithm = "PBEWithMD5AndDES";
+		
+		//Create factory for generating keys
+		SecretKeyFactory factory = SecretKeyFactory.getInstance(algorithm);
+		
+		//Generate key
+		PBEKeySpec pwKey = new PBEKeySpec(key);
+		SecretKey secretKey = factory.generateSecret(pwKey);
+		
+		//set up params: salt, # iterations
+		PBEParameterSpec pbeParamSpec = 
+				new PBEParameterSpec("12345678".getBytes(), 20); 
+		
+		//Initialize ciphers
+		encrypter = Cipher.getInstance(algorithm);
+		decrypter = Cipher.getInstance(algorithm);
+		encrypter.init(Cipher.ENCRYPT_MODE, secretKey, pbeParamSpec);
+		decrypter.init(Cipher.DECRYPT_MODE, secretKey, pbeParamSpec);
+	}	
 	
 	/**
 	 * Encrypts a string
