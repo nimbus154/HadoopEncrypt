@@ -43,6 +43,7 @@ public class EncrypterTest
 	public void testEncrypt() 
 	{
 		String original = "A secret";
+		
 		byte[] encrypted = e.encrypt(original.getBytes());
 		assertThat(original.getBytes(), IsNot.not(IsEqual.equalTo(encrypted)));
 	}
@@ -55,6 +56,21 @@ public class EncrypterTest
 	{
 		String original = "A secret";
 		byte[] decrypted = e.decrypt(e.encrypt(original.getBytes()));
+		assertEquals(original, new String(decrypted));
+	}
+	
+	/**
+	 * Tests password-based encryption
+	 */
+	@Test
+	public void testPBE() throws Exception
+	{
+		char[] key = "Key".toCharArray();
+		String original = "Secret";
+		Encrypter pbEncrytper = new Encrypter(key);
+		
+		byte[] encrypted = pbEncrytper.encrypt(original.getBytes());
+		byte[] decrypted = pbEncrytper.decrypt(encrypted);
 		assertEquals(original, new String(decrypted));
 	}
 }
