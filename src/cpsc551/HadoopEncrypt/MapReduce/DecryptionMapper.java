@@ -16,9 +16,13 @@ import cpsc551.HadoopEncrypt.Encrypter.ArrayConverter;
 import cpsc551.HadoopEncrypt.Encrypter.Encrypter;
 
 /**
- * Descrypts data 
+ * Decrypts data encrypted by Encryption Mapper
  * @author Chad Wyszynski
- *
+ * Input key    - DecryptionMapper receives lines of text as input. LongWritable
+ * 			      refers to the number of the first character in the line.
+ * Input value  - text of line
+ * Output key   - blank text
+ * Output value - decrypted text
  */
 public class DecryptionMapper 
 	extends Mapper<LongWritable, Text,	Text, Text> 
@@ -37,31 +41,38 @@ public class DecryptionMapper
 		decrypter = null;
 	};
 	
+	/**
+	 * Initializes mapper with an encrypter.
+	 * Useful for testing.
+	 * @param decrypter encrypter to user for mapping
+	 */
 	public DecryptionMapper(Encrypter decrypter)
 	{
 		this.decrypter = decrypter;
 	}
 	
 	/**
-	 * Generates (block number, encrypted block) key-value pairs
-	 * @param key block number
-	 * @param value byte string to be encrypted
+	 * Decrypts data
+	 * @param key character number in file
+	 * @param value encrypted data
 	 * @param context to write new key values to;
+	 * OUTPUT: blank key, decrypted data
 	 */
 	public void map(LongWritable key, Text value, Context context)
 			throws IOException, InterruptedException
-	{//TODO make notes on what the keys and values are
+	{
 		if(decrypter == null)
 		{
 			Configuration conf = context.getConfiguration();
 			decrypter = createEncrypter(
 							conf.get("encryptionKey").toCharArray());
 		}
-		//retrieve bytes from value parameter
-		Scanner scanner = new Scanner(value.toString());
-		getCharNumber(scanner); //extra old key
 		//set default values in case of failure
 		byte[] decrypted = { };
+		
+		//retrieve bytes from value parameter
+		Scanner scanner = new Scanner(value.toString());
+		getCharNumber(scanner); //extract old key, not used for calculations
 		try
 		{
 			decrypted = decrypter.decrypt(getEncryptedData(scanner));
@@ -105,7 +116,7 @@ public class DecryptionMapper
 		ArrayList<Byte> encryptedData = new ArrayList<Byte>();
 		while(scanner.hasNext())
 		{
-			int nextVal = Integer.parseInt(scanner.next(), 16);
+			int nextVal = Integer.parseInt(scanner.next(), 16); //parse as hex
 			encryptedData.add((byte) nextVal);
 		}
 		

@@ -9,8 +9,12 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 /**
- * @author nimbus154
- *
+ * Groups all decrypted data; assembles it as original file
+ * @author Chad Wyszynski
+ * Input key - Blank line of text
+ * Input value - Decrypted text
+ * Output key - blank text
+ * Output value - Decrypted file
  */
 public class DecryptionReducer extends
 		Reducer<Text, Text,	Text, Text> 

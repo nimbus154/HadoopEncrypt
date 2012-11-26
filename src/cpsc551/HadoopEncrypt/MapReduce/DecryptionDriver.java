@@ -48,7 +48,7 @@ public class DecryptionDriver extends Configured implements Tool {
 		//save encryption key so it can be read by mapper
 		conf.set("encryptionKey", args[0]);
 		//smallest separator possible b/c not writing keys (blank doesn't work)
-		conf.set("mapred.textoutputformat.separator", "" ); 
+		conf.set("mapred.textoutputformat.separator", " "); 
 		
 		//create a new Hadoop job, set all options
 		Job job = new Job(conf, "HadoopDecrypt");
