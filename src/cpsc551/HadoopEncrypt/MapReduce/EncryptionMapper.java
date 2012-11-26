@@ -5,9 +5,6 @@ package cpsc551.HadoopEncrypt.MapReduce;
 
 import java.io.IOException;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -26,21 +23,10 @@ public class EncryptionMapper
 {	
 	private Encrypter encrypter;
 	
-	public EncryptionMapper() throws Exception
+	public EncryptionMapper()
 	{ 
-		this(KeyGenerator.getInstance("AES").generateKey());
+		encrypter = null;
 	};
-	
-	/**
-	 * Creates a EncryptionMapper with a given key
-	 * @param key key to use for encryption
-	 */
-	public EncryptionMapper(SecretKey key)
-	{
-		try{
-		encrypter = new Encrypter(key);
-		}catch(Exception e) {}
-	}
 	
 	public EncryptionMapper(Encrypter encrypter)
 	{
@@ -56,20 +42,32 @@ public class EncryptionMapper
 	public void map(LongWritable key, Text value, Context context)
 			throws IOException, InterruptedException
 	{	
-		Configuration conf = context.getConfiguration();
-		String encryptionKey = conf.get("encryptionKey");
-		try 
+		if(encrypter == null)
 		{
-			encrypter = new Encrypter(encryptionKey.toCharArray());
-		}
-		catch(Exception e) //encryption initialization errors
-		{
-			context.write(new LongWritable(-1), new BytesWritable());
+			Configuration conf = context.getConfiguration();
+			encrypter = createEncrypter(
+							conf.get("encryptionKey").toCharArray());
 		}
 		context.write
 		(
 			key, 
 			new BytesWritable(encrypter.encrypt(value.toString().getBytes()))
 		);
+	}
+	
+	/**
+	 * Creates an encrypter from a given key
+	 * @param encryptionKey encryption key to use for encryption/decryption
+	 * @return encrypter or null
+	 */
+	private Encrypter createEncrypter(char[] encryptionKey)
+	{
+		Encrypter e = null;
+		try
+		{
+			e = new Encrypter(encryptionKey);
+		}
+		catch(Exception exception) {}
+		return e;
 	}
 }

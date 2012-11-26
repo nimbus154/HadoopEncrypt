@@ -26,7 +26,7 @@ public class EncryptionDriver extends Configured implements Tool {
 	 */
 	private void printUsage()
 	{
-	      System.err.printf("Usage: %s [generic options] <encryption key>"
+	      System.err.printf("Usage: %s [generic options] <encryption key> "
 	    		  + "<input> <output>\n",
 	          getClass().getSimpleName());
 	      ToolRunner.printGenericCommandUsage(System.err);

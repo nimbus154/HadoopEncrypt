@@ -5,15 +5,9 @@ package cpsc551.HadoopEncrypt.MapReduce.Test;
 
 import static org.junit.Assert.*;
 
-import org.hamcrest.core.IsEqual;
-import org.hamcrest.core.IsNot;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
-
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
@@ -30,44 +24,41 @@ import cpsc551.HadoopEncrypt.MapReduce.EncryptionMapper;
  */
 public class DecryptionMapperTest {
 
-	private SecretKey key;
-	
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-		key = KeyGenerator.getInstance("AES").generateKey();
-	}
-
 	/**
 	 * Test method for {@link cpsc551.HadoopEncrypt.MapReduce.EncryptionMapper#map(org.apache.hadoop.io.IntWritable, org.apache.hadoop.io.BytesWritable, org.apache.hadoop.mapreduce.Mapper.Context)}.
 	 * If EncryptionMapper is not working properly, this may not work properly
 	 */
 	@Test
 	public void testMapIntWritableBytesWritableContext() throws Exception {
-		byte[] input = {0, 1, 2, 3, 4};		
+		String original = "secret";
+		Encrypter encrypter = new Encrypter("password".toCharArray());
 		//Run Encryption Mapper		
-		List<Pair<IntWritable, BytesWritable>> result = 
-				new MapDriver<IntWritable, BytesWritable, IntWritable, BytesWritable>()
-					.withMapper(new EncryptionMapper(key))
-					.withInput(new IntWritable(1), new BytesWritable(input))
+		List<Pair<LongWritable, BytesWritable>> result = 
+				new MapDriver<LongWritable, Text, LongWritable, BytesWritable>()
+					.withMapper(new EncryptionMapper(encrypter))
+					.withInput(new LongWritable(0), new Text(original))
 					.run();
 		
-		//TODO - figure out where the 8 mysterious bytes come from
-		byte[] encrypted = result.get(0).getSecond().getBytes();
-		for(byte b : encrypted)
-			System.out.print(b + " ");
-		byte[] test = new byte[16];
+		byte[] encryptedBytes = result.get(0).getSecond().getBytes();
+		String encrypted = new String(encryptedBytes);
+		assertFalse(original == encrypted);
 		
-		for(int i = 0; i < 16; i ++)
-			test[i] = encrypted[i];
-		
+		byte[] toDecrypt = new byte[encrypter.getBlockSize()];
+		//Hadoop adds a few bytes to the end, they must be stripped for testing
+		//Surprisingly, this is a non-issue in production
+		for(int i = 0; i < toDecrypt.length; i ++)
+			toDecrypt[i] = encryptedBytes[i];
+		String s = "";
+		for(byte b : toDecrypt)
+		{
+			s += String.format("%02x", b) + " ";
+		}
+		Text input = new Text("123	" + s);
 		//Now, test DecryptionMapper
-		new MapDriver<IntWritable, BytesWritable, IntWritable, BytesWritable>()
-					.withMapper(new DecryptionMapper(key))
-					.withInput(new IntWritable(1), new BytesWritable(test))
-					.withOutput(new IntWritable(1), new BytesWritable(input))
-					.runTest();
+		new MapDriver<LongWritable, Text, Text, Text>()
+			.withMapper(new DecryptionMapper(encrypter))
+			.withInput(new LongWritable(0), input)
+			.withOutput(new Text(), new Text(original))
+			.runTest();
 	}
 }

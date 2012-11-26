@@ -4,12 +4,8 @@
 package cpsc551.HadoopEncrypt.MapReduce;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Scanner;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
@@ -25,7 +21,7 @@ import cpsc551.HadoopEncrypt.Encrypter.Encrypter;
  *
  */
 public class DecryptionMapper 
-	extends Mapper<LongWritable, Text,	LongWritable, Text> 
+	extends Mapper<LongWritable, Text,	Text, Text> 
 {
 	/**
 	 * Performs decryption operations
@@ -36,17 +32,10 @@ public class DecryptionMapper
 	 * Generic constructor. This is the constructor called by Hadoop
 	 * @throws Exception
 	 */
-	public DecryptionMapper() throws Exception { };
-	
-	/**
-	 * Creates a EncryptionMapper with a given key
-	 * @param key key to use for encryption
-	 * @throws Exception encryption related exceptions
-	 */
-	public DecryptionMapper(SecretKey key) throws Exception
-	{
-		decrypter = new Encrypter(key);
-	}
+	public DecryptionMapper() throws Exception 
+	{ 
+		decrypter = null;
+	};
 	
 	public DecryptionMapper(Encrypter decrypter)
 	{
@@ -62,24 +51,23 @@ public class DecryptionMapper
 	public void map(LongWritable key, Text value, Context context)
 			throws IOException, InterruptedException
 	{//TODO make notes on what the keys and values are
-		//Get encryption key
-		Configuration conf = context.getConfiguration();
-		String encryptionKey = conf.get("encryptionKey");
-		
+		if(decrypter == null)
+		{
+			Configuration conf = context.getConfiguration();
+			decrypter = createEncrypter(
+							conf.get("encryptionKey").toCharArray());
+		}
 		//retrieve bytes from value parameter
 		Scanner scanner = new Scanner(value.toString());
+		getCharNumber(scanner); //extra old key
 		//set default values in case of failure
 		byte[] decrypted = { };
-		LongWritable charNumber = new LongWritable(-1);	
 		try
 		{
-			charNumber = getCharNumber(scanner);
-			decrypter = new Encrypter(encryptionKey.toCharArray());
 			decrypted = decrypter.decrypt(getEncryptedData(scanner));
 		}
 		catch(Exception e)	{ } //empty catch b/c error values already set
-		
-		context.write(charNumber, new Text(decrypted + "\n"));
+		context.write(new Text(), new Text(decrypted));
 	}
 	
 	/**
@@ -123,4 +111,21 @@ public class DecryptionMapper
 		
 		return ArrayConverter.toByteArray(encryptedData);
 	}
+	
+	/**
+	 * Creates an encrypter from a given key
+	 * @param encryptionKey encryption key to use for encryption/decryption
+	 * @return encrypter or null
+	 */
+	private Encrypter createEncrypter(char[] encryptionKey)
+	{
+		Encrypter e = null;
+		try
+		{
+			e = new Encrypter(encryptionKey);
+		}
+		catch(Exception exception) {}
+		return e;
+	}
+
 }

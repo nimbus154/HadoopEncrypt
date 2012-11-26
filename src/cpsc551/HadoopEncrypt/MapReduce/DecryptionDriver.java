@@ -25,22 +25,26 @@ public class DecryptionDriver extends Configured implements Tool {
 	 */
 	private void printUsage()
 	{
-	      System.err.printf("Usage: %s [generic options] <encryption key>"
+	      System.err.printf("Usage: %s [generic options] <encryption key> "
 	    		  + "<input> <output>\n",
 	          getClass().getSimpleName());
 	      ToolRunner.printGenericCommandUsage(System.err);
 	}
 
 	  @Override
-	  public int run(String[] args) throws Exception {
+	  public int run(String[] args) throws Exception 
+	  {
 		//need encryption key, input, and output files
-	    if (args.length != 3) {
+	    if (args.length != 3) 
+	    {
 	    	printUsage();
 	      return -1;
 	    }
+	    
 	    //save encryption key so it can be read by mapper
 	    Configuration conf = new Configuration();
 	    conf.set("encryptionKey", args[0]);
+	    conf.set("key.value.separator.in.input.line", "");
 	    
 	    //create a new Hadoop job, set all options
 	    Job job = new Job(conf, "HadoopDecrypt");

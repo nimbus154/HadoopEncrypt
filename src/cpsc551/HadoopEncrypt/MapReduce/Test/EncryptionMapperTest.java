@@ -16,6 +16,7 @@ import org.apache.hadoop.io.*;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 
+import cpsc551.HadoopEncrypt.Encrypter.Encrypter;
 import cpsc551.HadoopEncrypt.MapReduce.EncryptionMapper;
 
 /**
@@ -38,17 +39,14 @@ public class EncryptionMapperTest {
 	@Test
 	public void testMapIntWritableBytesWritableContext() throws Exception {
 		String plaintext = "123456";
-		
-		List<Pair<LongWritable, Text>> result = 
-				new MapDriver<LongWritable, Text, LongWritable, Text>()
-					.withMapper(new EncryptionMapper())
+		Encrypter e = new Encrypter("asdf".toCharArray());
+		List<Pair<LongWritable, BytesWritable>> result = 
+				new MapDriver<LongWritable, Text, LongWritable, BytesWritable>()
+					.withMapper(new EncryptionMapper(e))
 					.withInput(new LongWritable(1), new Text(plaintext))
 					.run();
 		String encrypted = result.get(0).getSecond().toString();
 		assertThat(plaintext, IsNot.not(IsEqual.equalTo(encrypted)));
-		
-		//byte[] expected = e.encrypt(plainBytes);		
-		//assertEquals(expected.length, encrypted.length);
-		
+		assertFalse(result.get(0).getSecond().getBytes().length == 0);
 	}
 }
